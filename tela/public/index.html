@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tela de Login / Cadastro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Meu App</h1>
+
+    <div class="tabs">
+      <button id="btnLogin" class="active">Entrar</button>
+      <button id="btnCadastro">Cadastrar</button>
+    </div>
+
+    <!-- LOGIN -->
+    <form id="formLogin" class="form">
+      <label>Telefone:</label>
+      <input id="telefoneLogin" type="tel" required>
+
+      <label>Senha:</label>
+      <input id="senhaLogin" type="password" required>
+
+      <div class="buttons">
+        <button type="submit">Entrar</button>
+        <button type="button" class="danger" id="excluirLogin">Excluir</button>
+      </div>
+    </form>
+
+    <!-- CADASTRO -->
+    <form id="formCadastro" class="form hidden">
+      <label>Nome completo:</label>
+      <input id="nomeCadastro" type="text" required>
+
+      <label>Telefone:</label>
+      <input id="telefoneCadastro" type="tel" required>
+
+      <label>Senha:</label>
+      <input id="senhaCadastro" type="password" required>
+
+      <div class="buttons">
+        <button type="submit">Cadastrar</button>
+      </div>
+    </form>
+
+    <p id="mensagem"></p>
+
+    <div class="listagem">
+       <button id="btnListar">Mostrar Cadastros</button>
+  <ul id="listaUsuarios"></ul>
+</div>
+
+  </div>
+
+  <script>
+    const btnLogin = document.getElementById("btnLogin");
+    const btnCadastro = document.getElementById("btnCadastro");
+    const formLogin = document.getElementById("formLogin");
+    const formCadastro = document.getElementById("formCadastro");
+    const msg = document.getElementById("mensagem");
+
+    btnLogin.onclick = () => {
+      formLogin.classList.remove("hidden");
+      formCadastro.classList.add("hidden");
+      btnLogin.classList.add("active");
+      btnCadastro.classList.remove("active");
+      msg.textContent = "";
+    };
+
+    btnCadastro.onclick = () => {
+      formCadastro.classList.remove("hidden");
+      formLogin.classList.add("hidden");
+      btnCadastro.classList.add("active");
+      btnLogin.classList.remove("active");
+      msg.textContent = "";
+    };
+
+    formCadastro.onsubmit = async (e) => {
+      e.preventDefault();
+      const nome = nomeCadastro.value;
+      const telefone = telefoneCadastro.value;
+      const senha = senhaCadastro.value;
+
+      const res = await fetch("/api/cadastrar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ nome, telefone, senha })
+      });
+      const data = await res.json();
+      msg.textContent = data.mensagem || data.erro;
+    };
+
+    formLogin.onsubmit = async (e) => {
+      e.preventDefault();
+      const telefone = telefoneLogin.value;
+      const senha = senhaLogin.value;
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ telefone, senha })
+      });
+      const data = await res.json();
+      msg.textContent = data.mensagem || data.erro;
+    };
+
+    document.getElementById("excluirLogin").onclick = async () => {
+      const telefone = telefoneLogin.value;
+      if (!telefone) return alert("Digite o telefone para excluir!");
+      const res = await fetch("/api/excluir", {
+        method: "DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ telefone })
+      });
+      const data = await res.json();
+      msg.textContent = data.mensagem || data.erro;
+    };
+
+    document.getElementById("btnListar").onclick = async () => {
+      const res = await fetch("/api/listar");
+      const data = await res.json();
+      const lista = document.getElementById("listaUsuarios");
+
+    lista.innerHTML = ""; // limpa antes de exibir
+
+    if (data.length === 0) {
+      lista.innerHTML = "<li>Nenhum cadastro encontrado.</li>";
+      return;
+    }
+
+    data.forEach(u => {
+      const item = document.createElement("li");
+      item.textContent = `${u.nome} - ${u.telefone}`;
+      lista.appendChild(item);
+    });
+  };
+
+
+  </script>
+</body>
+</html>
