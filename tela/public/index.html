@@ -15,7 +15,6 @@
       <button id="btnCadastro">Cadastrar</button>
     </div>
 
-    <!-- LOGIN -->
     <form id="formLogin" class="form">
       <label>Telefone:</label>
       <input id="telefoneLogin" type="tel" required>
@@ -29,7 +28,6 @@
       </div>
     </form>
 
-    <!-- CADASTRO -->
     <form id="formCadastro" class="form hidden">
       <label>Nome completo:</label>
       <input id="nomeCadastro" type="text" required>
@@ -64,7 +62,6 @@
   const formCadastro = document.getElementById("formCadastro");
   const msg = document.getElementById("mensagem");
 
-  // ✅ Trocar abas
   btnLogin.onclick = () => {
     formLogin.classList.remove("hidden");
     formCadastro.classList.add("hidden");
@@ -81,7 +78,6 @@
     msg.textContent = "";
   };
 
-  // ✅ Cadastrar usuário
   formCadastro.onsubmit = async (e) => {
     e.preventDefault();
 
@@ -99,7 +95,6 @@
     msg.textContent = data.mensagem || data.erro;
   };
 
-  // ✅ Login
   formLogin.onsubmit = async (e) => {
     e.preventDefault();
 
@@ -116,7 +111,6 @@
     msg.textContent = data.mensagem || data.erro;
   };
 
-  // ✅ Listar
   document.getElementById("btnListar").onclick = async () => {
     const res = await fetch(API_URL + "/api/listar");
     const data = await res.json();
@@ -140,7 +134,6 @@
     });
   };
 
-  // ✅ Excluir usuário pelo _id
   document.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delBtn")) {
 
@@ -160,7 +153,6 @@
     }
   });
 
-  // ✅ Editar usuário
   document.addEventListener("click", async (e) => {
     if (e.target.classList.contains("editBtn")) {
 

@@ -5,26 +5,20 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-// ✅ Conexão com o MongoDB
 mongoose.connect("mongodb://localhost:27017/usuariosDB")
   .then(() => console.log("✅ Conectado ao MongoDB local"))
   .catch(err => console.error("❌ Erro na conexão", err));
 
-
-// ✅ MODELO GARANTINDO _id
 const Usuario = mongoose.model("Usuario", new mongoose.Schema({
   nome: String,
   telefone: String,
   senha: String
 }, { versionKey: false }));
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-
-// ✅ CADASTRAR
 app.post("/api/cadastrar", async (req, res) => {
   const { nome, telefone, senha } = req.body;
   try {
@@ -41,8 +35,6 @@ app.post("/api/cadastrar", async (req, res) => {
   }
 });
 
-
-// ✅ LOGIN
 app.post("/api/login", async (req, res) => {
   const { telefone, senha } = req.body;
 
@@ -57,8 +49,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-
-// ✅ LISTAR (AGORA SEM REMOVER _id)
 app.get("/api/listar", async (req, res) => {
   try {
     const usuarios = await Usuario.find({});
@@ -68,8 +58,6 @@ app.get("/api/listar", async (req, res) => {
   }
 });
 
-
-// ✅ EXCLUIR PELO _id
 app.delete("/api/excluir/:id", async (req, res) => {
   try {
     await Usuario.findByIdAndDelete(req.params.id);
@@ -79,8 +67,6 @@ app.delete("/api/excluir/:id", async (req, res) => {
   }
 });
 
-
-// ✅ EDITAR PELO _id
 app.put("/api/editar/:id", async (req, res) => {
   const { nome, telefone, senha } = req.body;
 
@@ -91,7 +77,6 @@ app.put("/api/editar/:id", async (req, res) => {
     res.status(500).json({ erro: "Erro ao atualizar." });
   }
 });
-
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
