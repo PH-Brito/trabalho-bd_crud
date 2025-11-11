@@ -117,3 +117,21 @@ button[type="submit"] {
   border-radius: 5px;
   width: 80%;
 }
+.editBtn {
+  background: #f1c40f;
+  border: none;
+  padding: 4px 8px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delBtn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  margin-left: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}

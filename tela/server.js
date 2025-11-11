@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -6,71 +5,93 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-// 🔗 Conexão com o MongoDB local
+// ✅ Conexão com o MongoDB
 mongoose.connect("mongodb://localhost:27017/usuariosDB")
   .then(() => console.log("✅ Conectado ao MongoDB local"))
-  .catch(err => console.error("❌ Erro ao conectar no MongoDB:", err));
+  .catch(err => console.error("❌ Erro na conexão", err));
 
-// 🧱 Modelo do usuário
-const Usuario = mongoose.model("Usuario", {
+
+// ✅ MODELO GARANTINDO _id
+const Usuario = mongoose.model("Usuario", new mongoose.Schema({
   nome: String,
   telefone: String,
   senha: String
-});
+}, { versionKey: false }));
 
-// Middlewares
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔐 Rota de login
-app.post("/api/login", async (req, res) => {
-  const { telefone, senha } = req.body;
-  try {
-    const user = await Usuario.findOne({ telefone, senha });
-    if (!user) return res.status(401).json({ erro: "Telefone ou senha inválidos." });
-    res.json({ mensagem: `Bem-vindo, ${user.nome}!` });
-  } catch {
-    res.status(500).json({ erro: "Erro no servidor." });
-  }
-});
 
-// 🧾 Rota de cadastro
+// ✅ CADASTRAR
 app.post("/api/cadastrar", async (req, res) => {
   const { nome, telefone, senha } = req.body;
   try {
-    const existente = await Usuario.findOne({ telefone });
-    if (existente) return res.status(400).json({ erro: "Telefone já cadastrado!" });
+    const existe = await Usuario.findOne({ telefone });
+    if (existe) return res.status(400).json({ erro: "Telefone já cadastrado!" });
 
     const novo = new Usuario({ nome, telefone, senha });
     await novo.save();
+
     res.json({ mensagem: "Usuário cadastrado com sucesso!" });
+
   } catch {
-    res.status(500).json({ erro: "Erro no servidor." });
+    res.status(500).json({ erro: "Erro ao cadastrar." });
   }
 });
 
-// 🗑️ Rota para excluir conta
-app.delete("/api/excluir", async (req, res) => {
-  const { telefone } = req.body;
+
+// ✅ LOGIN
+app.post("/api/login", async (req, res) => {
+  const { telefone, senha } = req.body;
+
   try {
-    await Usuario.deleteOne({ telefone });
-    res.json({ mensagem: "Conta excluída com sucesso." });
+    const user = await Usuario.findOne({ telefone, senha });
+    if (!user) return res.status(401).json({ erro: "Telefone ou senha inválidos." });
+
+    res.json({ mensagem: `Bem-vindo, ${user.nome}!` });
+
   } catch {
-    res.status(500).json({ erro: "Erro ao excluir conta." });
+    res.status(500).json({ erro: "Erro ao fazer login." });
   }
 });
 
-// 🧾 Rota para listar todos os cadastros
+
+// ✅ LISTAR (AGORA SEM REMOVER _id)
 app.get("/api/listar", async (req, res) => {
   try {
-    const usuarios = await Usuario.find({}, "nome telefone -_id"); // traz nome e telefone, sem _id
+    const usuarios = await Usuario.find({});
     res.json(usuarios);
-  } catch (err) {
+  } catch {
     res.status(500).json({ erro: "Erro ao listar usuários." });
   }
 });
 
-// 🚀 Inicializa o servidor
+
+// ✅ EXCLUIR PELO _id
+app.delete("/api/excluir/:id", async (req, res) => {
+  try {
+    await Usuario.findByIdAndDelete(req.params.id);
+    res.json({ mensagem: "Usuário excluído!" });
+  } catch {
+    res.status(500).json({ erro: "Erro ao excluir." });
+  }
+});
+
+
+// ✅ EDITAR PELO _id
+app.put("/api/editar/:id", async (req, res) => {
+  const { nome, telefone, senha } = req.body;
+
+  try {
+    await Usuario.findByIdAndUpdate(req.params.id, { nome, telefone, senha });
+    res.json({ mensagem: "Usuário atualizado!" });
+  } catch {
+    res.status(500).json({ erro: "Erro ao atualizar." });
+  }
+});
+
+
 const PORT = 3000;
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));

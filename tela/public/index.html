@@ -54,76 +54,75 @@
 
   </div>
 
-  <script>
-    const btnLogin = document.getElementById("btnLogin");
-    const btnCadastro = document.getElementById("btnCadastro");
-    const formLogin = document.getElementById("formLogin");
-    const formCadastro = document.getElementById("formCadastro");
-    const msg = document.getElementById("mensagem");
+ <script>
 
-    btnLogin.onclick = () => {
-      formLogin.classList.remove("hidden");
-      formCadastro.classList.add("hidden");
-      btnLogin.classList.add("active");
-      btnCadastro.classList.remove("active");
-      msg.textContent = "";
-    };
+  const API_URL = "http://localhost:3000";
 
-    btnCadastro.onclick = () => {
-      formCadastro.classList.remove("hidden");
-      formLogin.classList.add("hidden");
-      btnCadastro.classList.add("active");
-      btnLogin.classList.remove("active");
-      msg.textContent = "";
-    };
+  const btnLogin = document.getElementById("btnLogin");
+  const btnCadastro = document.getElementById("btnCadastro");
+  const formLogin = document.getElementById("formLogin");
+  const formCadastro = document.getElementById("formCadastro");
+  const msg = document.getElementById("mensagem");
 
-    formCadastro.onsubmit = async (e) => {
-      e.preventDefault();
-      const nome = nomeCadastro.value;
-      const telefone = telefoneCadastro.value;
-      const senha = senhaCadastro.value;
+  // ✅ Trocar abas
+  btnLogin.onclick = () => {
+    formLogin.classList.remove("hidden");
+    formCadastro.classList.add("hidden");
+    btnLogin.classList.add("active");
+    btnCadastro.classList.remove("active");
+    msg.textContent = "";
+  };
 
-      const res = await fetch("/api/cadastrar", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ nome, telefone, senha })
-      });
-      const data = await res.json();
-      msg.textContent = data.mensagem || data.erro;
-    };
+  btnCadastro.onclick = () => {
+    formCadastro.classList.remove("hidden");
+    formLogin.classList.add("hidden");
+    btnCadastro.classList.add("active");
+    btnLogin.classList.remove("active");
+    msg.textContent = "";
+  };
 
-    formLogin.onsubmit = async (e) => {
-      e.preventDefault();
-      const telefone = telefoneLogin.value;
-      const senha = senhaLogin.value;
+  // ✅ Cadastrar usuário
+  formCadastro.onsubmit = async (e) => {
+    e.preventDefault();
 
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ telefone, senha })
-      });
-      const data = await res.json();
-      msg.textContent = data.mensagem || data.erro;
-    };
+    const nome = nomeCadastro.value;
+    const telefone = telefoneCadastro.value;
+    const senha = senhaCadastro.value;
 
-    document.getElementById("excluirLogin").onclick = async () => {
-      const telefone = telefoneLogin.value;
-      if (!telefone) return alert("Digite o telefone para excluir!");
-      const res = await fetch("/api/excluir", {
-        method: "DELETE",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ telefone })
-      });
-      const data = await res.json();
-      msg.textContent = data.mensagem || data.erro;
-    };
+    const res = await fetch(API_URL + "/api/cadastrar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, telefone, senha })
+    });
 
-    document.getElementById("btnListar").onclick = async () => {
-      const res = await fetch("/api/listar");
-      const data = await res.json();
-      const lista = document.getElementById("listaUsuarios");
+    const data = await res.json();
+    msg.textContent = data.mensagem || data.erro;
+  };
 
-    lista.innerHTML = ""; // limpa antes de exibir
+  // ✅ Login
+  formLogin.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const telefone = telefoneLogin.value;
+    const senha = senhaLogin.value;
+
+    const res = await fetch(API_URL + "/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telefone, senha })
+    });
+
+    const data = await res.json();
+    msg.textContent = data.mensagem || data.erro;
+  };
+
+  // ✅ Listar
+  document.getElementById("btnListar").onclick = async () => {
+    const res = await fetch(API_URL + "/api/listar");
+    const data = await res.json();
+    const lista = document.getElementById("listaUsuarios");
+
+    lista.innerHTML = "";
 
     if (data.length === 0) {
       lista.innerHTML = "<li>Nenhum cadastro encontrado.</li>";
@@ -132,12 +131,74 @@
 
     data.forEach(u => {
       const item = document.createElement("li");
-      item.textContent = `${u.nome} - ${u.telefone}`;
+      item.innerHTML = `
+        ${u.nome} - ${u.telefone}
+        <button class="editBtn" data-id="${u._id}">Editar</button>
+        <button class="delBtn" data-id="${u._id}">Excluir</button>
+      `;
       lista.appendChild(item);
     });
   };
 
+  // ✅ Excluir usuário pelo _id
+  document.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("delBtn")) {
 
-  </script>
+      const id = e.target.getAttribute("data-id");
+      console.log("ID para excluir:", id);
+
+      if (!confirm("Excluir usuário?")) return;
+
+      const res = await fetch(API_URL + "/api/excluir/" + id, {
+        method: "DELETE"
+      });
+
+      const data = await res.json();
+      msg.textContent = data.mensagem;
+
+      document.getElementById("btnListar").click();
+    }
+  });
+
+  // ✅ Editar usuário
+  document.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("editBtn")) {
+
+      const id = e.target.getAttribute("data-id");
+      console.log("ID para editar:", id);
+
+      const res = await fetch(API_URL + "/api/listar");
+      const allUsers = await res.json();
+      const user = allUsers.find(u => u._id === id);
+
+      btnCadastro.click();
+      nomeCadastro.value = user.nome;
+      telefoneCadastro.value = user.telefone;
+      senhaCadastro.value = user.senha;
+
+      formCadastro.onsubmit = async (ev) => {
+        ev.preventDefault();
+
+        const nome = nomeCadastro.value;
+        const telefone = telefoneCadastro.value;
+        const senha = senhaCadastro.value;
+
+        const res = await fetch(API_URL + "/api/editar/" + id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, telefone, senha })
+        });
+
+        const data = await res.json();
+        msg.textContent = data.mensagem;
+
+        document.getElementById("btnListar").click();
+      };
+    }
+  });
+
+</script>
+
+
 </body>
 </html>
