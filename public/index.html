@@ -17,14 +17,13 @@
 
     <form id="formLogin" class="form">
       <label>Telefone:</label>
-      <input id="telefoneLogin" type="tel" required>
+      <input id="telefoneLogin" type="tel" pattern="[0-9]{8,15}" title="Apenas números" required>
 
       <label>Senha:</label>
       <input id="senhaLogin" type="password" required>
 
       <div class="buttons">
-        <button type="submit">Entrar</button>
-        <button type="button" class="danger" id="excluirLogin">Excluir</button>
+        <button type="submit">Login</button>
       </div>
     </form>
 
@@ -33,7 +32,7 @@
       <input id="nomeCadastro" type="text" required>
 
       <label>Telefone:</label>
-      <input id="telefoneCadastro" type="tel" required>
+      <input id="telefoneCadastro" type="tel" pattern="[0-9]{8,15}" title="Apenas números" required>
 
       <label>Senha:</label>
       <input id="senhaCadastro" type="password" required>
